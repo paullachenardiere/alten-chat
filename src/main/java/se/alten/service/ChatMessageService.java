@@ -7,7 +7,6 @@ import se.alten.model.User;
 import se.alten.repository.ChatMessageRepo;
 
 import javax.annotation.Resource;
-import javax.persistence.NoResultException;
 import java.time.LocalDateTime;
 import java.util.List;
 

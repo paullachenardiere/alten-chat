@@ -1,12 +1,8 @@
 package se.alten.model;
 
-import org.hibernate.validator.constraints.Email;
-
-import javax.annotation.Generated;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.UniqueConstraint;
 
 /**
  * Created by pl3731 on 2017-01-26.
@@ -21,6 +17,7 @@ public class User {
     private String userName;
     private String password;
 
+    //TODO Implements fields below =>
     // Email
     // Avatar
 

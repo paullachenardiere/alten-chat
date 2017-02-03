@@ -21,10 +21,9 @@ import java.util.logging.Logger;
  * Created by pl3731 on 2017-01-26.
  */
 
-//@SpringBootApplication
-//@ApplicationScope
 @Configuration
 @EnableAutoConfiguration
+@SuppressWarnings("SpringComponentScan")
 @ComponentScan({"com.therealdanvega", "se.alten"})
 public class Application extends SpringBootServletInitializer {
 
