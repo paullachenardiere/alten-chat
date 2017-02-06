@@ -45,7 +45,7 @@ public class ChatController extends WebMvcConfigurerAdapter {
             message = service.getMessage(id);
             responseEntity = new ResponseEntity<Message>(message, HttpStatus.OK);
         } catch (NoResultException nre) {
-            responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.NOT_FOUND);
+            responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
         return responseEntity;
@@ -92,8 +92,6 @@ public class ChatController extends WebMvcConfigurerAdapter {
     public ResponseEntity updateReplyMessage(@RequestBody ReplyMessage msg, @PathVariable("id") int id) {
         ResponseEntity responseEntity;
 
-
-        //TODO
         try {
             service.getUser(msg.getUserId());
             service.updateMessage(msg);
@@ -141,14 +139,19 @@ public class ChatController extends WebMvcConfigurerAdapter {
 
     @RequestMapping(value = "/user", method = RequestMethod.POST)
     public ResponseEntity<Void> createUser(@RequestBody User usr) {
+        ResponseEntity responseEntity;
 
-        //TODO Validate user
-        User user = new User(usr.getUserName(), usr.getPassword());
-        service.createUser(user);
-        log.info("Created new User = " + user.toString());
+        User user = service.validateUser(usr);
+        if (user != null) {
+            service.createUser(user);
+            log.info("Created new User = " + user.toString());
+            responseEntity = new ResponseEntity<>(HttpStatus.CREATED);
+        } else {
+            log.info("Create new User FAILED = " + usr.toString());
+            responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
 
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return responseEntity;
     }
 
     @RequestMapping(value = "/users", method = RequestMethod.GET)

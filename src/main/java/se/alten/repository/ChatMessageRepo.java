@@ -53,9 +53,9 @@ public class ChatMessageRepo {
         Message message = getMessage(editedMessage.getId());
 
         if (message != null) {
-            message.setMessage(editedMessage.getMessage());
             message.setReplies(editedMessage.getReplies());
             if (!message.getMessage().equals(editedMessage.getMessage())) {
+                message.setMessage(editedMessage.getMessage());
                 message.setEdited(true);
             }
             em.merge(message);

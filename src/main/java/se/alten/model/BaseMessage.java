@@ -3,6 +3,7 @@ package se.alten.model;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -15,7 +16,9 @@ public abstract class BaseMessage implements Serializable {
     @Id
     @GeneratedValue
     private int id;
+    @NotNull
     private LocalDateTime timestamp;
+    @NotNull
     private int userId;
     private String message;
     private Boolean isEdited = false;

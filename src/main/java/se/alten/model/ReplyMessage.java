@@ -1,6 +1,7 @@
 package se.alten.model;
 
 import javax.persistence.Entity;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by pl3731 on 2017-02-02.
@@ -8,6 +9,7 @@ import javax.persistence.Entity;
 @Entity
 public class ReplyMessage extends BaseMessage {
 
+    @NotNull
     private int parentId;
 
     public ReplyMessage() {

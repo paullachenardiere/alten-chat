@@ -44,6 +44,7 @@ public class ChatMessageService {
     public void updateMessage(Message message) {
         messageRepo.updateMessage(message);
     }
+
     public void updateMessage(ReplyMessage replyMessage) {
         messageRepo.updateReplyMessage(replyMessage);
     }
@@ -62,5 +63,27 @@ public class ChatMessageService {
         Message message = getMessage(parentId);
         message.addReply(replyMessage);
         updateMessage(message);
+    }
+
+    public User validateUser(User user) {
+
+        //TODO Improve this validation. Regex on email...
+
+        boolean valid = true;
+        User validUser = null;
+
+        if (user.getUserName() == null || user.getUserName().length() < 3) {
+            valid = false;
+        }
+
+        if (user.getPassword() == null || user.getPassword().length() < 4) {
+            valid = false;
+        }
+
+        if (valid) {
+            validUser = new User(user.getUserName(), user.getPassword());
+        }
+
+        return validUser;
     }
 }
