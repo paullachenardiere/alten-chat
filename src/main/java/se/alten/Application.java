@@ -6,9 +6,13 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.annotation.ApplicationScope;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import se.alten.model.User;
 import se.alten.repository.ChatMessageRepo;
 import se.alten.service.ChatMessageService;
@@ -40,6 +44,17 @@ public class Application extends SpringBootServletInitializer {
         return application.sources(Application.class);
     }
 
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurerAdapter() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**").allowedOrigins("http://localhost:8000", "chrome-extension://aejoelaoggembcahagimdiliamlcdmfm");
+            }
+        };
+    }
+
+
     public static void main(String[] args) throws Exception {
         SpringApplication.run(Application.class, args);
     }
@@ -47,7 +62,7 @@ public class Application extends SpringBootServletInitializer {
     @PostConstruct
     public void addUser() {
         User user = new User("testuser", "password");
-        log.info("@PostConstruct" + user.toString());
+        log.info("@PostConstruct " + user.toString());
         messageRepo.createUser(user);
     }
 

@@ -1,6 +1,7 @@
 package se.alten.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import se.alten.model.User;
 import se.alten.service.ChatMessageService;
 
 import javax.persistence.NoResultException;
+import java.net.URI;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -29,7 +31,6 @@ public class ChatController extends WebMvcConfigurerAdapter {
 
     @Autowired
     private ChatMessageService service;
-
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ResponseEntity<List<Message>> getMessages() {
@@ -50,7 +51,6 @@ public class ChatController extends WebMvcConfigurerAdapter {
 
         return responseEntity;
     }
-
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public ResponseEntity<Void> postMessage(@RequestBody Message msg) {
@@ -135,7 +135,6 @@ public class ChatController extends WebMvcConfigurerAdapter {
 
         return responseEntity;
     }
-
 
     @RequestMapping(value = "/user", method = RequestMethod.POST)
     public ResponseEntity<Void> createUser(@RequestBody User usr) {
