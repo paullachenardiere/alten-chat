@@ -31,8 +31,10 @@ public class ChatMessageRepo {
         return resultList;
     }
 
-    public void addMessage(Message message) {
+    public Message addMessage(Message message) {
         em.persist(message);
+        em.flush();
+        return message;
     }
 
     public void updateReplyMessage(ReplyMessage replyMessage) {
@@ -48,7 +50,7 @@ public class ChatMessageRepo {
     }
 
 
-    public void updateMessage(Message editedMessage) throws NoResultException {
+    public Message updateMessage(Message editedMessage) throws NoResultException {
 
         Message message = getMessage(editedMessage.getId());
 
@@ -59,7 +61,9 @@ public class ChatMessageRepo {
                 message.setEdited(true);
             }
             em.merge(message);
+            em.flush();
         }
+            return message;
     }
 
     public Message getMessage(int id) throws NoResultException {

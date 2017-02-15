@@ -53,15 +53,16 @@ public class ChatController extends WebMvcConfigurerAdapter {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
-    public ResponseEntity<Void> postMessage(@RequestBody Message msg) {
+    public ResponseEntity<Message> postMessage(@RequestBody Message msg) {
         ResponseEntity responseEntity;
 
         try {
             service.getUser(msg.getUserId());
-            Message message = new Message(msg.getMessage(), msg.getUserId());
-            service.addNewChatMessage(message);
+//            Message message = new Message(msg.getMessage(), msg.getUserId());
+            Message message = service.addNewChatMessage(msg);
             log.info("Incoming message = " + message.toString());
-            responseEntity = new ResponseEntity<>(HttpStatus.CREATED);
+
+            responseEntity = new ResponseEntity<Message>(message, HttpStatus.CREATED);
         } catch (NoResultException nre) {
             log.warning("Can't add message because the user don't exists. (UserId=" + msg.getUserId() + ") " + nre);
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
@@ -107,12 +108,12 @@ public class ChatController extends WebMvcConfigurerAdapter {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
-    public ResponseEntity<Void> replyMessage(@RequestBody Message msg, @PathVariable("id") int parentId) {
+    public ResponseEntity<Message> replyMessage(@RequestBody Message msg, @PathVariable("id") int parentId) {
         ResponseEntity responseEntity;
 
         try {
-            service.replyMessage(msg, parentId);
-            responseEntity = new ResponseEntity<>(HttpStatus.CREATED);
+            Message message = service.replyMessage(msg, parentId);
+            responseEntity = new ResponseEntity<Message>(message, HttpStatus.CREATED);
 
         } catch (NoResultException nre) {
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);

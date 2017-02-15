@@ -20,9 +20,10 @@ public class ChatMessageService {
     private ChatMessageRepo messageRepo;
 
 
-    public void addNewChatMessage(Message message) {
+    public Message addNewChatMessage(Message message) {
         message.setTimestamp(LocalDateTime.now());
         messageRepo.addMessage(message);
+        return message;
     }
 
     public List<Message> getAllChatMessages() {
@@ -41,8 +42,8 @@ public class ChatMessageService {
         return messageRepo.getUser(userId);
     }
 
-    public void updateMessage(Message message) {
-        messageRepo.updateMessage(message);
+    public Message updateMessage(Message message) {
+        return messageRepo.updateMessage(message);
     }
 
     public void updateMessage(ReplyMessage replyMessage) {
@@ -57,12 +58,12 @@ public class ChatMessageService {
         return messageRepo.getMessage(id);
     }
 
-    public void replyMessage(Message msg, int parentId) {
+    public Message replyMessage(Message msg, int parentId) {
         ReplyMessage replyMessage = new ReplyMessage(msg.getMessage(), msg.getUserId(), parentId);
         replyMessage.setTimestamp(LocalDateTime.now());
         Message message = getMessage(parentId);
         message.addReply(replyMessage);
-        updateMessage(message);
+        return updateMessage(message);
     }
 
     public User validateUser(User user) {
