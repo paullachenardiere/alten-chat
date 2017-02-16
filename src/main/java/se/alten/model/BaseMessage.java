@@ -2,10 +2,11 @@ package se.alten.model;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 /**
  * Created by pl3731 on 2017-02-02.
@@ -17,9 +18,10 @@ public abstract class BaseMessage implements Serializable {
     @GeneratedValue
     private int id;
     @NotNull
-    private LocalDateTime timestamp;
+    private Timestamp timestamp;
     @NotNull
     private int userId;
+    @Lob
     private String message;
     private Boolean isEdited = false;
 
@@ -36,11 +38,11 @@ public abstract class BaseMessage implements Serializable {
         return id;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Timestamp getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -71,12 +73,10 @@ public abstract class BaseMessage implements Serializable {
 
     @Override
     public String toString() {
-        return "BaseMessage{" +
-                "id=" + id +
+        return "id=" + id +
                 ", timestamp=" + timestamp +
                 ", userId=" + userId +
-                ", message='" + message + '\'' +
-                ", isEdited=" + isEdited +
-                '}';
+                ", message='" + message +
+                ", isEdited=" + isEdited;
     }
 }

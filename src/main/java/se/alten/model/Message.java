@@ -41,8 +41,9 @@ public class Message extends BaseMessage {
 
     @Override
     public String toString() {
-        return "Message{" +
-                "replies=" + replies +
+        return "Message {" +
+                super.toString() +
+                ", replies=" + replies +
                 '}';
     }
 }

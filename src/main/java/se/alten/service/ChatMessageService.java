@@ -7,7 +7,8 @@ import se.alten.model.User;
 import se.alten.repository.ChatMessageRepo;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ public class ChatMessageService {
 
 
     public Message addNewChatMessage(Message message) {
-        message.setTimestamp(LocalDateTime.now());
+        message.setTimestamp(getTimestampOfCurrent());
         messageRepo.addMessage(message);
         return message;
     }
@@ -60,16 +61,20 @@ public class ChatMessageService {
 
     public Message replyMessage(Message msg, int parentId) {
         ReplyMessage replyMessage = new ReplyMessage(msg.getMessage(), msg.getUserId(), parentId);
-        replyMessage.setTimestamp(LocalDateTime.now());
+        replyMessage.setTimestamp(getTimestampOfCurrent());
         Message message = getMessage(parentId);
         message.addReply(replyMessage);
         return updateMessage(message);
     }
 
+    private Timestamp getTimestampOfCurrent() {
+        Instant instant = Instant.now();
+        long timeStampMillis = instant.toEpochMilli();
+        return new Timestamp(timeStampMillis);
+    }
+
     public User validateUser(User user) {
-
         //TODO Improve this validation. Regex on email...
-
         boolean valid = true;
         User validUser = null;
 

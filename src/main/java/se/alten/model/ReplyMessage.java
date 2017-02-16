@@ -26,8 +26,9 @@ public class ReplyMessage extends BaseMessage {
 
     @Override
     public String toString() {
-        return "ReplyMessage{" +
-                "parentId=" + parentId +
+        return "ReplyMessage {" +
+                super.toString() +
+                ", parentId=" + parentId +
                 '}';
     }
 }

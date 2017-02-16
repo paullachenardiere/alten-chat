@@ -1,19 +1,19 @@
 package se.alten.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import se.alten.model.BaseMessage;
 import se.alten.model.Message;
 import se.alten.model.ReplyMessage;
 import se.alten.model.User;
 import se.alten.service.ChatMessageService;
 
 import javax.persistence.NoResultException;
-import java.net.URI;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -73,34 +73,33 @@ public class ChatController extends WebMvcConfigurerAdapter {
 
     @RequestMapping(value = "/", method = RequestMethod.PUT)
     public ResponseEntity updateMessage(@RequestBody Message msg) {
-        ResponseEntity responseEntity;
-
-        try {
-            service.getUser(msg.getUserId());
-            service.updateMessage(msg);
-            log.info("Update message = " + msg.toString());
-            responseEntity = new ResponseEntity<>(HttpStatus.CREATED);
-
-        } catch (NoResultException nre) {
-            log.warning("Can't update message because the user don't exists. (UserId=" + msg.getUserId() + ") " + nre);
-            responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
-        }
-
-        return responseEntity;
+        return update(msg);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity updateReplyMessage(@RequestBody ReplyMessage msg, @PathVariable("id") int id) {
-        ResponseEntity responseEntity;
+        return update(msg);
+    }
 
+    private ResponseEntity update(BaseMessage msg) {
+        ResponseEntity responseEntity;
+        String type = null;
         try {
             service.getUser(msg.getUserId());
-            service.updateMessage(msg);
-            log.info("Update reply message = " + msg.toString());
+
+            if (msg instanceof ReplyMessage) {
+                type = "replyMessage";
+                service.updateMessage((ReplyMessage) msg);
+            }
+            if (msg instanceof Message) {
+                type = "message";
+                service.updateMessage((Message) msg);
+            }
+            log.info("Update " + type + " " + msg.toString());
             responseEntity = new ResponseEntity<>(HttpStatus.CREATED);
 
-        } catch (NoResultException nre) {
-            log.warning("Can't update reply message because the user don't exists. (UserId=" + msg.getUserId() + ") " + nre);
+        } catch (NoResultException | EmptyResultDataAccessException nre) {
+            log.warning("Can't update message because the user don't exists. (UserId=" + msg.getUserId() + ") " + nre);
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
         }
 
