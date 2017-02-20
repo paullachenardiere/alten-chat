@@ -16,3 +16,4 @@ target
 .idea
 atlassian-ide-plugin.xml
 .idea/workspace.xml
+/src/main/resources/local_properties.yml
