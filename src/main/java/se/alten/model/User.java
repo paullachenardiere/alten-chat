@@ -3,6 +3,7 @@ package se.alten.model;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -11,7 +12,6 @@ import javax.validation.constraints.NotNull;
 @Entity
 public class User {
 
-
     @Id
     @GeneratedValue
     private int userId;
@@ -19,11 +19,10 @@ public class User {
     private String userName;
     @NotNull
     private String password;
-
-    //TODO Implements fields below =>
-    // Email
-    // Avatar
-
+    private String alias;
+    private String email;
+    @Lob
+    private String avatar;
 
 
     public User() {
@@ -55,11 +54,27 @@ public class User {
         this.password = password;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "userName='" + userName + '\'' +
-                ", password='" + password + '\'' +
-                '}';
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }

@@ -7,15 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import se.alten.model.BaseMessage;
-import se.alten.model.Message;
-import se.alten.model.ReplyMessage;
-import se.alten.model.User;
+import se.alten.model.*;
 import se.alten.service.ChatMessageService;
 
 import javax.persistence.NoResultException;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 
 /**
@@ -34,16 +32,17 @@ public class ChatController extends WebMvcConfigurerAdapter {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ResponseEntity<List<Message>> getMessages() {
-        List messages = service.getAllChatMessages();
+        List<Message> messages = service.getAllChatMessages().stream().map(m -> service.transformToPresentationMessage(m)).collect(Collectors.toList());
+
         return new ResponseEntity<List<Message>>(messages, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Message> getMessage(@PathVariable("id") int id) {
+    public ResponseEntity getMessage(@PathVariable("id") int id) {
         ResponseEntity responseEntity;
         Message message;
         try {
-            message = service.getMessage(id);
+            message = service.transformToPresentationMessage(service.getMessage(id));
             responseEntity = new ResponseEntity<Message>(message, HttpStatus.OK);
         } catch (NoResultException nre) {
             responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -53,18 +52,19 @@ public class ChatController extends WebMvcConfigurerAdapter {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
-    public ResponseEntity<Message> postMessage(@RequestBody Message msg) {
+    public ResponseEntity postMessage(@RequestBody MessagePost msg) {
         ResponseEntity responseEntity;
-
+        Message message = null;
         try {
-            service.getUser(msg.getUserId());
-//            Message message = new Message(msg.getMessage(), msg.getUserId());
-            Message message = service.addNewChatMessage(msg);
+            User user = service.getUser(msg.getUserId());
+            message = service.transformToPersistentMessage(msg, user);
+            message = service.addNewChatMessage(message);
+            message = service.transformToPresentationMessage(message);
             log.info("Incoming message = " + message.toString());
 
             responseEntity = new ResponseEntity<Message>(message, HttpStatus.CREATED);
         } catch (NoResultException nre) {
-            log.warning("Can't add message because the user don't exists. (UserId=" + msg.getUserId() + ") " + nre);
+            log.warning("Can't add message because the user don't exists. (UserId=" + message.getUser().getUserId() + ") " + nre);
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
         }
 
@@ -72,34 +72,45 @@ public class ChatController extends WebMvcConfigurerAdapter {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.PUT)
-    public ResponseEntity updateMessage(@RequestBody Message msg) {
+    public ResponseEntity updateMessage(@RequestBody MessagePost msg) {
+
+        log.info("updateMessage " + msg.toString());
+
         return update(msg);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public ResponseEntity updateReplyMessage(@RequestBody ReplyMessage msg, @PathVariable("id") int id) {
-        return update(msg);
-    }
+//    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+//    public ResponseEntity updateReplyMessage(@RequestBody ReplyMessage msg, @PathVariable("id") int id) {
+//        return update(msg);
+//    }
 
-    private ResponseEntity update(BaseMessage msg) {
+    private ResponseEntity update(MessagePost msg) {
         ResponseEntity responseEntity;
         String type = null;
-        try {
-            service.getUser(msg.getUserId());
+        Message message = null;
+        ReplyMessage replyMessage = null;
 
-            if (msg instanceof ReplyMessage) {
-                type = "replyMessage";
-                service.updateMessage((ReplyMessage) msg);
-            }
-            if (msg instanceof Message) {
-                type = "message";
-                service.updateMessage((Message) msg);
-            }
-            log.info("Update " + type + " " + msg.toString());
-            responseEntity = new ResponseEntity<>(HttpStatus.CREATED);
+        User user = service.getUser(msg.getUserId());
+        message = service.updateMessage(msg);
+
+        try {
+//            service.getUser(msg.getUser().getUserId());
+                //TODO Check if user exists before update.
+//            if (msg instanceof ReplyMessage) {
+//                type = "replyMessage";
+//                replyMessage = service.updateMessage((ReplyMessage) msg);
+//            }
+//            if (msg instanceof Message) {
+//                type = "message";
+//            }
+                message = service.transformToPresentationMessage(message);
+
+            log.info("Update " + type + " " + message.toString());
+
+            responseEntity = new ResponseEntity<Message>(message,HttpStatus.CREATED);
 
         } catch (NoResultException | EmptyResultDataAccessException nre) {
-            log.warning("Can't update message because the user don't exists. (UserId=" + msg.getUserId() + ") " + nre);
+            log.warning("Can't update message because the user don't exists. (UserId=" + message.getUser().getUserId() + ") " + nre);
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
         }
 
@@ -107,11 +118,15 @@ public class ChatController extends WebMvcConfigurerAdapter {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
-    public ResponseEntity<Message> replyMessage(@RequestBody Message msg, @PathVariable("id") int parentId) {
+    public ResponseEntity<Message> replyMessage(@RequestBody MessagePost msg, @PathVariable("id") int parentId) {
         ResponseEntity responseEntity;
+        Message message = null;
 
         try {
-            Message message = service.replyMessage(msg, parentId);
+            User user = service.getUser(msg.getUserId());
+            message = service.transformToPersistentMessage(msg, user);
+            message = service.replyMessage(message, parentId);
+            message = service.transformToPresentationMessage(message);
             responseEntity = new ResponseEntity<Message>(message, HttpStatus.CREATED);
 
         } catch (NoResultException nre) {
@@ -137,7 +152,7 @@ public class ChatController extends WebMvcConfigurerAdapter {
     }
 
     @RequestMapping(value = "/user", method = RequestMethod.POST)
-    public ResponseEntity<Void> createUser(@RequestBody User usr) {
+    public ResponseEntity createUser(@RequestBody User usr) {
         ResponseEntity responseEntity;
 
         User user = service.validateUser(usr);

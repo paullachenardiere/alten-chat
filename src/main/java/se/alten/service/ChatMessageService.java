@@ -1,9 +1,7 @@
 package se.alten.service;
 
 import org.springframework.stereotype.Service;
-import se.alten.model.Message;
-import se.alten.model.ReplyMessage;
-import se.alten.model.User;
+import se.alten.model.*;
 import se.alten.repository.ChatMessageRepo;
 
 import javax.annotation.Resource;
@@ -43,12 +41,15 @@ public class ChatMessageService {
         return messageRepo.getUser(userId);
     }
 
-    public Message updateMessage(Message message) {
+    public Message updateMessage(MessagePost messagePost) {
+        Message message = getMessage(messagePost.getId());
+        message.setMessage(messagePost.getMessage());
+        message.setEdited(true);
         return messageRepo.updateMessage(message);
     }
 
-    public void updateMessage(ReplyMessage replyMessage) {
-        messageRepo.updateReplyMessage(replyMessage);
+    public ReplyMessage updateMessage(ReplyMessage replyMessage) {
+        return messageRepo.updateReplyMessage(replyMessage);
     }
 
     public void deleteMessage(int id) {
@@ -60,11 +61,17 @@ public class ChatMessageService {
     }
 
     public Message replyMessage(Message msg, int parentId) {
-        ReplyMessage replyMessage = new ReplyMessage(msg.getMessage(), msg.getUserId(), parentId);
+        ReplyMessage replyMessage = new ReplyMessage(msg.getMessage(), msg.getUser(), parentId);
         replyMessage.setTimestamp(getTimestampOfCurrent());
         Message message = getMessage(parentId);
         message.addReply(replyMessage);
-        return updateMessage(message);
+        return messageRepo.updateMessage(message);
+    }
+
+    public Message transformToPresentationMessage(BaseMessage message) {
+        User user = message.getUser();
+        user.setPassword("");
+        return (Message) message;
     }
 
     private Timestamp getTimestampOfCurrent() {
@@ -91,5 +98,11 @@ public class ChatMessageService {
         }
 
         return validUser;
+    }
+
+
+    public Message transformToPersistentMessage(MessagePost msg, User user) {
+        Message message = new Message(msg.getMessage(), user);
+        return message;
     }
 }

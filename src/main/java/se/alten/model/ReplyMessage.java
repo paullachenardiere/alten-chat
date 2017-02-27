@@ -15,8 +15,8 @@ public class ReplyMessage extends BaseMessage {
     public ReplyMessage() {
     }
 
-    public ReplyMessage(String message, int userId, int parentId) {
-        super(message, userId);
+    public ReplyMessage(String message, User user, int parentId) {
+        super(message, user);
         this.parentId = parentId;
     }
 

@@ -23,8 +23,8 @@ public class Message extends BaseMessage {
     public Message() {
     }
 
-    public Message(String message, int userId) {
-        super(message, userId);
+    public Message(String message, User user) {
+        super(message, user);
     }
 
     public List<ReplyMessage> getReplies() {

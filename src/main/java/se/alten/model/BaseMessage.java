@@ -1,9 +1,6 @@
 package se.alten.model;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -19,8 +16,8 @@ public abstract class BaseMessage implements Serializable {
     private int id;
     @NotNull
     private Timestamp timestamp;
-    @NotNull
-    private int userId;
+    @ManyToOne
+    private User user;
     @Lob
     private String message;
     private Boolean isEdited = false;
@@ -28,10 +25,10 @@ public abstract class BaseMessage implements Serializable {
     public BaseMessage() {
     }
 
-    public BaseMessage(String message, int userId) {
+    public BaseMessage(String message, User user) {
         super();
         this.message = message;
-        this.userId = userId;
+        this.user = user;
     }
 
     public int getId() {
@@ -46,14 +43,6 @@ public abstract class BaseMessage implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
     public String getMessage() {
         return message;
     }
@@ -61,7 +50,6 @@ public abstract class BaseMessage implements Serializable {
     public void setMessage(String message) {
         this.message = message;
     }
-
 
     public Boolean isEdited() {
         return isEdited;
@@ -71,12 +59,21 @@ public abstract class BaseMessage implements Serializable {
         isEdited = edited;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     @Override
     public String toString() {
         return "id=" + id +
                 ", timestamp=" + timestamp +
-                ", userId=" + userId +
-                ", message='" + message +
-                ", isEdited=" + isEdited;
+                ", user=" + user +
+                ", message='" + message + '\'' +
+                ", isEdited=" + isEdited +
+                '}';
     }
 }

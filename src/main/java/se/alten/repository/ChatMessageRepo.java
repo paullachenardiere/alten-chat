@@ -26,9 +26,8 @@ public class ChatMessageRepo {
      */
     @SuppressWarnings("JpaQlInspection")
     public List<Message> getAll() {
-        Query query = em.createQuery("SELECT m FROM Message m");
-        List resultList = query.getResultList();
-        return resultList;
+        TypedQuery<Message> query = em.createQuery("SELECT m FROM Message m", Message.class);
+        return query.getResultList();
     }
 
     public Message addMessage(Message message) {
@@ -37,7 +36,7 @@ public class ChatMessageRepo {
         return message;
     }
 
-    public void updateReplyMessage(ReplyMessage replyMessage) {
+    public ReplyMessage updateReplyMessage(ReplyMessage replyMessage) {
         ReplyMessage message = getReplyMessage(replyMessage.getId());
 
         if (message != null) {
@@ -46,11 +45,17 @@ public class ChatMessageRepo {
                 message.setEdited(true);
             }
             em.merge(message);
+            em.flush();
         }
+        return message;
     }
 
 
-    public Message updateMessage(Message editedMessage) throws NoResultException {
+    public Message updateMessage(Message message) {
+        return em.merge(message);
+    }
+
+    public Message updateMessageReplies(Message editedMessage) throws NoResultException {
 
         Message message = getMessage(editedMessage.getId());
 
@@ -63,7 +68,7 @@ public class ChatMessageRepo {
             em.merge(message);
             em.flush();
         }
-            return message;
+        return message;
     }
 
     public Message getMessage(int id) throws NoResultException {
@@ -153,11 +158,11 @@ public class ChatMessageRepo {
 
     @SuppressWarnings("JpaQlInspection")
     public List<User> getUsers() {
-        Query query = em.createQuery("SELECT u FROM User u");
-        List resultList = query.getResultList();
-        return resultList;
+        TypedQuery<User> query = em.createQuery("SELECT u FROM User u", User.class);
+        return query.getResultList();
 
     }
+
 
 
 }

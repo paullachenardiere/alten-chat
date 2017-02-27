@@ -1,4 +1,4 @@
 url: jdbc:mysql://localhost:3306/altenchat
 username: admin
 password: admin
-ddl-auto: create-drop
+ddl-auto: update
