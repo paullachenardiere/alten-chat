@@ -1,5 +1,7 @@
 package se.alten.repository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +19,10 @@ import java.util.List;
 @Transactional
 public class ChatMessageRepo {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
     @PersistenceContext
     private EntityManager em;
-
 
     /**
      * message persistance

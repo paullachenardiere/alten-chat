@@ -11,6 +11,8 @@
 # Maven
 target
 
+# Log-files
+/logs
 
 ### Intellij
 .idea

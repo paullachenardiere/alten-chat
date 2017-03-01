@@ -1,5 +1,7 @@
 package se.alten.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -12,7 +14,6 @@ import se.alten.service.ChatMessageService;
 
 import javax.persistence.NoResultException;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 @RequestMapping("altenchat")
 public class ChatController extends WebMvcConfigurerAdapter {
 
-    private Logger log = Logger.getLogger(ChatController.class.toString());
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private ChatMessageService service;
@@ -33,7 +34,7 @@ public class ChatController extends WebMvcConfigurerAdapter {
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ResponseEntity<List<Message>> getMessages() {
         List<Message> messages = service.getAllChatMessages().stream().map(m -> service.transformToPresentationMessage(m)).collect(Collectors.toList());
-
+        log.info("Get all messages. Amount = " + messages.size());
         return new ResponseEntity<List<Message>>(messages, HttpStatus.OK);
     }
 
@@ -64,7 +65,7 @@ public class ChatController extends WebMvcConfigurerAdapter {
 
             responseEntity = new ResponseEntity<Message>(message, HttpStatus.CREATED);
         } catch (NoResultException nre) {
-            log.warning("Can't add message because the user don't exists. (UserId=" + message.getUser().getUserId() + ") " + nre);
+            log.warn("Can't add message because the user don't exists. (UserId=" + message.getUser().getUserId() + ") " + nre);
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
         }
 
@@ -105,12 +106,12 @@ public class ChatController extends WebMvcConfigurerAdapter {
 //            }
                 message = service.transformToPresentationMessage(message);
 
-            log.info("Update " + type + " " + message.toString());
+//            log.info("Update " + type + " " + message.toString());
 
             responseEntity = new ResponseEntity<Message>(message,HttpStatus.CREATED);
 
         } catch (NoResultException | EmptyResultDataAccessException nre) {
-            log.warning("Can't update message because the user don't exists. (UserId=" + message.getUser().getUserId() + ") " + nre);
+            log.warn("Can't update message because the user don't exists. (UserId=" + message.getUser().getUserId() + ") " + nre);
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
         }
 
@@ -127,6 +128,7 @@ public class ChatController extends WebMvcConfigurerAdapter {
             message = service.transformToPersistentMessage(msg, user);
             message = service.replyMessage(message, parentId);
             message = service.transformToPresentationMessage(message);
+            log.info("Reply Message: " + msg.getMessage());
             responseEntity = new ResponseEntity<Message>(message, HttpStatus.CREATED);
 
         } catch (NoResultException nre) {
@@ -144,7 +146,7 @@ public class ChatController extends WebMvcConfigurerAdapter {
             service.deleteMessage(id);
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
         } catch (NoResultException nre) {
-            log.warning("Can't delete message because the message don't exists. (MessageId=" + id + ") " + nre);
+            log.warn("Can't delete message because the message don't exists. (MessageId=" + id + ") " + nre);
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
         }
 

@@ -1,5 +1,7 @@
 package se.alten;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -19,7 +21,6 @@ import se.alten.repository.ChatMessageRepo;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * Created by pl3731 on 2017-01-26.
@@ -30,8 +31,8 @@ import java.util.logging.Logger;
 @ComponentScan({"se.alten"})
 public class Application extends SpringBootServletInitializer {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private static Properties properties;
-    private Logger log = Logger.getLogger(Application.class.toString());
     @Resource
     private ChatMessageRepo messageRepo;
 
