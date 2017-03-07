@@ -7,19 +7,23 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 import se.alten.model.User;
 import se.alten.repository.ChatMessageRepo;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.servlet.ServletContext;
 import java.util.*;
 
 /**
@@ -43,12 +47,25 @@ public class Application extends SpringBootServletInitializer {
     }
 
     @Bean
+    public ServletContextAware endpointExporterInitializer(final ApplicationContext applicationContext) {
+        return new ServletContextAware() {
+            @Override
+            public void setServletContext(ServletContext servletContext) {
+                ServerEndpointExporter exporter = new ServerEndpointExporter();
+                exporter.setApplicationContext(applicationContext);
+                exporter.afterPropertiesSet();
+            }
+        };
+    }
+
+
+    @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurerAdapter() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:8000", "http://localhost:4200", "chrome-extension://aejoelaoggembcahagimdiliamlcdmfm")
+                        .allowedOrigins("http://localhost:8000", "http://ws.localhost:4200", "http://localhost:4200", "chrome-extension://aejoelaoggembcahagimdiliamlcdmfm")
                         .allowedMethods("GET", "POST", "PUT", "DELETE");
             }
         };
