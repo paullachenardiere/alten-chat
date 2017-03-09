@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 /**
  * Created by pl3731 on 2017-01-26.
  */
-@Controller
-@ServerEndpoint(value = "/chat", configurator = SpringConfigurator.class)
+//@Controller
+//@ServerEndpoint(value = "/chat", configurator = SpringConfigurator.class)
 public class ChatSocketController {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -46,7 +46,7 @@ public class ChatSocketController {
 
     @SuppressWarnings("Duplicates")
 //    @MessageMapping("/messages")
-    @MessageMapping("/chat")
+//    @MessageMapping("/chat")
     public ResponseEntity<List<Message>> getMessages() {
         List<Message> messages = service.getAllChatMessages().stream().map(m -> service.transformToPresentationMessage(m)).collect(Collectors.toList());
         log.info("Get all messages. Amount = " + messages.size());

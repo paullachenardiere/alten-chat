@@ -26,10 +26,6 @@ import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import java.util.*;
 
-/**
- * Created by pl3731 on 2017-01-26.
- */
-
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan({"se.alten"})
@@ -46,6 +42,7 @@ public class Application extends SpringBootServletInitializer {
         return application.sources(Application.class);
     }
 
+    //TODO Verify that this is required for the web sockets endpoint.
     @Bean
     public ServletContextAware endpointExporterInitializer(final ApplicationContext applicationContext) {
         return new ServletContextAware() {
@@ -58,14 +55,14 @@ public class Application extends SpringBootServletInitializer {
         };
     }
 
-
+    //TODO This can probably be removed because of the proxy solution in the client...
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurerAdapter() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:8000", "http://ws.localhost:4200", "http://localhost:4200", "chrome-extension://aejoelaoggembcahagimdiliamlcdmfm")
+                        .allowedOrigins("http://localhost:8000", "http://localhost:4200", "chrome-extension://aejoelaoggembcahagimdiliamlcdmfm")
                         .allowedMethods("GET", "POST", "PUT", "DELETE");
             }
         };
@@ -79,6 +76,7 @@ public class Application extends SpringBootServletInitializer {
     @PostConstruct
     public void addUser() {
         String property = properties.getProperty("ddl-auto");
+        log.info("property ddl-auto = " + property);
         if (property.equalsIgnoreCase("Create-drop")) {
             log.info("Database is empty. Creating default users");
             User user1 = new User("testuser 1", "password1");
@@ -98,7 +96,6 @@ public class Application extends SpringBootServletInitializer {
         System.setProperty("password", properties.getProperty("password"));
         System.setProperty("url", properties.getProperty("url"));
         System.setProperty("ddl-auto", properties.getProperty("ddl-auto"));
-
-
     }
+
 }
