@@ -3,6 +3,7 @@ package se.alten.sockets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import se.alten.controller.ChatController;
 import se.alten.model.Message;
 import se.alten.model.MessagePost;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,7 +32,7 @@ public class MessageHandler extends TextWebSocketHandler {
     ChatController ChatController;
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session)  {
         //TODO Check so that the client doesn't already exists... (if that's even possible...)
         sessions.put(session.getId(), session);
         log.info("afterConnectionEstablished called. Session = " + session);
@@ -37,7 +40,7 @@ public class MessageHandler extends TextWebSocketHandler {
 
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         boolean containsKey = sessions.containsKey(session.getId());
 
         if (containsKey) {
@@ -47,13 +50,18 @@ public class MessageHandler extends TextWebSocketHandler {
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage messageIn) throws Exception {
+    protected void handleTextMessage(WebSocketSession session, TextMessage messageIn) throws IOException {
         if ("CLOSE".equalsIgnoreCase(messageIn.getPayload())) {
             session.close();
         } else {
             log.info("RAW textMessage in: " + messageIn.getPayload());
             JSONParser parser = new JSONParser();
-            Object obj = parser.parse(messageIn.getPayload());
+            Object obj = null;
+            try {
+                obj = parser.parse(messageIn.getPayload());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             JSONObject jsonObject = (JSONObject) obj;
 
             MessagePost messagePost = new MessagePost();
@@ -95,7 +103,14 @@ public class MessageHandler extends TextWebSocketHandler {
 
 
     @Override
-    public void handleTransportError(WebSocketSession webSocketSession, Throwable throwable) throws Exception {
+    public void handleTransportError(WebSocketSession webSocketSession, Throwable throwable) {
+        try {
+            InetSocketAddress address = webSocketSession.getRemoteAddress();
+            webSocketSession.close(CloseStatus.SERVER_ERROR);
+            log.warn("webSocketSession closed with transport error. Remote address = " + address );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

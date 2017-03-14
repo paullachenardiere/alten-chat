@@ -1,12 +1,18 @@
 package se.alten.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 import se.alten.model.*;
 import se.alten.repository.ChatMessageRepo;
+import se.alten.sockets.MessageHandler;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -21,6 +27,8 @@ public class ChatMessageService {
 
     @Resource
     private ChatMessageRepo messageRepo;
+    @Autowired
+    private MessageHandler messageHandler;
 
 
     public Message addNewChatMessage(Message message) {
@@ -108,5 +116,23 @@ public class ChatMessageService {
     public Message transformToPersistentMessage(MessagePost msg, User user) {
         Message message = new Message(msg.getMessage(), user);
         return message;
+    }
+
+    public void notifySubscribers(Message message) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        for (WebSocketSession session : messageHandler.getAllSessions().values()) {
+            if (session.isOpen()) {
+                try {
+                    log.info("Sending message to subscriber. id = " + session.getId());
+                    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public int getCurrentActiveSessions() {
+        return messageHandler.getCurrentActiveSessions();
     }
 }

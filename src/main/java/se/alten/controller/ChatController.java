@@ -1,7 +1,5 @@
 package se.alten.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 import se.alten.model.*;
 import se.alten.service.ChatMessageService;
-import se.alten.sockets.MessageHandler;
 
 import javax.persistence.NoResultException;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,16 +24,12 @@ import java.util.stream.Collectors;
 @EnableWebMvc
 @RestController
 @RequestMapping("altenchat")
-//@Controller
-//@ServerEndpoint(value = "/chat", configurator = SpringConfigurator.class)
 public class ChatController extends WebMvcConfigurerAdapter {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private ChatMessageService service;
-    @Autowired
-    private MessageHandler messageHandler;
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ResponseEntity<List<Message>> getMessages() {
@@ -62,8 +52,6 @@ public class ChatController extends WebMvcConfigurerAdapter {
         return responseEntity;
     }
 
-    //    @MessageMapping("/chat")
-//    @SendTo("/chat")
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public ResponseEntity postMessage(@RequestBody MessagePost msg) {
         ResponseEntity responseEntity;
@@ -76,7 +64,7 @@ public class ChatController extends WebMvcConfigurerAdapter {
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
         }
 
-//        myHandler.myHandler().notifyAll();
+        service.notifySubscribers(message);
 
         return responseEntity;
     }
@@ -98,11 +86,6 @@ public class ChatController extends WebMvcConfigurerAdapter {
 
         return update(msg);
     }
-
-//    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-//    public ResponseEntity updateReplyMessage(@RequestBody ReplyMessage msg, @PathVariable("id") int id) {
-//        return update(msg);
-//    }
 
     private ResponseEntity update(MessagePost msg) {
         ResponseEntity responseEntity;
@@ -153,16 +136,9 @@ public class ChatController extends WebMvcConfigurerAdapter {
         } catch (NoResultException nre) {
             responseEntity = new ResponseEntity<>(nre.getMessage(), HttpStatus.CONFLICT);
         }
-        ObjectMapper objectMapper = new ObjectMapper();
-        for (WebSocketSession session : messageHandler.getAllSessions().values()) {
-            if (session.isOpen()) {
-                try {
-                    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+
+        service.notifySubscribers(message);
+
         return responseEntity;
     }
 
@@ -208,7 +184,7 @@ public class ChatController extends WebMvcConfigurerAdapter {
     @RequestMapping(value = "/statistics", method = RequestMethod.GET)
     public ResponseEntity<Integer> getSessionsAmount() {
 
-        int currentActiveSessions = messageHandler.getCurrentActiveSessions();
+        int currentActiveSessions = service.getCurrentActiveSessions();
 
         return new ResponseEntity<Integer>(currentActiveSessions, HttpStatus.OK);
     }
