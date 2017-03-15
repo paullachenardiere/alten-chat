@@ -97,8 +97,8 @@ public class MessageHandler extends TextWebSocketHandler {
         //TODO create a "stripped down" wrapper class for the client?
         return sessions;
     }
-    public int getCurrentActiveSessions() {
-        return sessions.size();
+    public Map<String, WebSocketSession> getCurrentActiveSessions() {
+        return sessions;
     }
 
 

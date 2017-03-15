@@ -21,6 +21,8 @@ public abstract class BaseMessage implements Serializable {
     @Lob
     private String message;
     private Boolean isEdited = false;
+    private Boolean isDeleted = false;
+
 
     public BaseMessage() {
     }
@@ -67,6 +69,14 @@ public abstract class BaseMessage implements Serializable {
         this.user = user;
     }
 
+    public Boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
+    }
+
     @Override
     public String toString() {
         return "id=" + id +
@@ -74,6 +84,7 @@ public abstract class BaseMessage implements Serializable {
                 ", user=" + user +
                 ", message='" + message + '\'' +
                 ", isEdited=" + isEdited +
+                ", isDeleted=" + isDeleted +
                 '}';
     }
 }

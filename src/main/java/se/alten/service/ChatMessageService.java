@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by pl3731 on 2017-01-31.
@@ -64,8 +65,11 @@ public class ChatMessageService {
         return messageRepo.updateReplyMessage(replyMessage);
     }
 
-    public void deleteMessage(int id) {
+    public Message deleteMessage(int id) {
+        Message deletedMessage = messageRepo.getMessage(id);
         messageRepo.deleteMessage(id);
+        deletedMessage.setDeleted(true);
+        return deletedMessage;
     }
 
     public Message getMessage(int id) {
@@ -123,7 +127,12 @@ public class ChatMessageService {
         for (WebSocketSession session : messageHandler.getAllSessions().values()) {
             if (session.isOpen()) {
                 try {
-                    log.info("Sending message to subscriber. id = " + session.getId());
+                    if (message.isDeleted()) {
+                        log.info("DELETE. Sending deleted message to subscriber. id = " + session.getId());
+                    } else {
+                        log.info("Sending message to subscriber. id = " + session.getId());
+
+                    }
                     session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -132,7 +141,7 @@ public class ChatMessageService {
         }
     }
 
-    public int getCurrentActiveSessions() {
+    public Map<String, WebSocketSession> getCurrentActiveSessions() {
         return messageHandler.getCurrentActiveSessions();
     }
 }

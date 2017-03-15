@@ -9,11 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.socket.WebSocketSession;
 import se.alten.model.*;
 import se.alten.service.ChatMessageService;
 
 import javax.persistence.NoResultException;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -147,7 +149,8 @@ public class ChatController extends WebMvcConfigurerAdapter {
         ResponseEntity responseEntity;
 
         try {
-            service.deleteMessage(id);
+            Message deletedMessage = service.deleteMessage(id);
+            service.notifySubscribers(deletedMessage);
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
         } catch (NoResultException nre) {
             log.warn("Can't delete message because the message don't exists. (MessageId=" + id + ") " + nre);
@@ -182,11 +185,30 @@ public class ChatController extends WebMvcConfigurerAdapter {
     }
 
     @RequestMapping(value = "/statistics", method = RequestMethod.GET)
-    public ResponseEntity<Integer> getSessionsAmount() {
+    public ResponseEntity getSessionsAmount() {
 
-        int currentActiveSessions = service.getCurrentActiveSessions();
+        Map<String, WebSocketSession> currentActiveSessions = service.getCurrentActiveSessions();
+        HashMap<String, String> map = new HashMap<>();
+        ArrayList<WebSocketSession> list = new ArrayList<>();
+        Set<String> stringSet = currentActiveSessions.keySet();
+        for(String key : stringSet) {
+            map.put(key, currentActiveSessions.get(key).getLocalAddress().toString());
+//            list.add(currentActiveSessions.get(key));
+        }
 
-        return new ResponseEntity<Integer>(currentActiveSessions, HttpStatus.OK);
+
+        log.info("currentActiveSessions size = " + currentActiveSessions.size());
+        StatisticsWrapper statisticsWrapper = new StatisticsWrapper(currentActiveSessions);
+        return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
+    private class StatisticsWrapper implements Serializable {
+        private Map<String, WebSocketSession> stat;
+        StatisticsWrapper(Map<String, WebSocketSession> stat) {
+            this.stat = stat;
+        }
+        public StatisticsWrapper getStat()  {
+            return this;
+        }
+    }
 }
