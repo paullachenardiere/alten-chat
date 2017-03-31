@@ -22,6 +22,7 @@ public abstract class BaseMessage implements Serializable {
     private String message;
     private Boolean isEdited = false;
     private Boolean isDeleted = false;
+    private String sessionId;
 
 
     public BaseMessage() {
@@ -77,6 +78,14 @@ public abstract class BaseMessage implements Serializable {
         isDeleted = deleted;
     }
 
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
     @Override
     public String toString() {
         return "id=" + id +
@@ -85,6 +94,7 @@ public abstract class BaseMessage implements Serializable {
                 ", message='" + message + '\'' +
                 ", isEdited=" + isEdited +
                 ", isDeleted=" + isDeleted +
+                ", sessionId='" + sessionId + '\'' +
                 '}';
     }
 }

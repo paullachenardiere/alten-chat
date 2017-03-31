@@ -3,8 +3,8 @@ package se.alten.sockets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.context.annotation.ApplicationScope;
 import org.springframework.web.socket.config.annotation.*;
 
 
@@ -21,9 +21,16 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Autowired
     MessageHandler messageHandler;
 
+    @Bean
+    public HttpSessionIdHandshakeInterceptor httpSessionIdHandshakeInterceptor() {
+        return new HttpSessionIdHandshakeInterceptor();
+    }
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(messageHandler, "/chat").setAllowedOrigins("*");
+        WebSocketHandlerRegistration registration = registry.addHandler(messageHandler, "/chat");
+        registration.addInterceptors(httpSessionIdHandshakeInterceptor());
+        registration.setAllowedOrigins("*");
     }
 
 

@@ -22,7 +22,7 @@ import java.util.Map;
  * Created by pl3731 on 2017-01-31.
  */
 @Service
-public class ChatMessageService {
+public class ChatMessageService implements MessageService {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -32,28 +32,34 @@ public class ChatMessageService {
     private MessageHandler messageHandler;
 
 
+    @Override
     public Message addNewChatMessage(Message message) {
         message.setTimestamp(getTimestampOfCurrent());
         messageRepo.addMessage(message);
         return message;
     }
 
+    @Override
     public List<Message> getAllChatMessages() {
         return messageRepo.getAll();
     }
 
+    @Override
     public void createUser(User user) {
         messageRepo.createUser(user);
     }
 
+    @Override
     public List<User> getUsers() {
         return messageRepo.getUsers();
     }
 
+    @Override
     public User getUser(int userId) {
         return messageRepo.getUser(userId);
     }
 
+    @Override
     public Message updateMessage(MessagePost messagePost) {
         Message message = getMessage(messagePost.getId());
         message.setMessage(messagePost.getMessage());
@@ -61,21 +67,26 @@ public class ChatMessageService {
         return messageRepo.updateMessage(message);
     }
 
+    @Override
     public ReplyMessage updateMessage(ReplyMessage replyMessage) {
         return messageRepo.updateReplyMessage(replyMessage);
     }
 
-    public Message deleteMessage(int id) {
+    @Override
+    public Message deleteMessage(int id, String sessionId) {
         Message deletedMessage = messageRepo.getMessage(id);
         messageRepo.deleteMessage(id);
         deletedMessage.setDeleted(true);
+        deletedMessage.setSessionId(sessionId);
         return deletedMessage;
     }
 
+    @Override
     public Message getMessage(int id) {
         return messageRepo.getMessage(id);
     }
 
+    @Override
     public Message replyMessage(Message msg, int parentId) {
         ReplyMessage replyMessage = new ReplyMessage(msg.getMessage(), msg.getUser(), parentId);
         replyMessage.setTimestamp(getTimestampOfCurrent());
@@ -84,6 +95,7 @@ public class ChatMessageService {
         return messageRepo.updateMessage(message);
     }
 
+    @Override
     public Message transformToPresentationMessage(BaseMessage message) {
         User user = message.getUser();
         user.setPassword("");
@@ -96,6 +108,12 @@ public class ChatMessageService {
         return new Timestamp(timeStampMillis);
     }
 
+    @Override
+    public Message transformToPersistentMessage(MessagePost msg, User user) {
+        return new Message(msg.getMessage(), user);
+    }
+
+    @Override
     public User validateUser(User user) {
         //TODO Improve this validation. Regex on email...
         boolean valid = true;
@@ -116,12 +134,7 @@ public class ChatMessageService {
         return validUser;
     }
 
-
-    public Message transformToPersistentMessage(MessagePost msg, User user) {
-        Message message = new Message(msg.getMessage(), user);
-        return message;
-    }
-
+    @Override
     public void notifySubscribers(Message message) {
         ObjectMapper objectMapper = new ObjectMapper();
         for (WebSocketSession session : messageHandler.getAllSessions().values()) {
@@ -141,6 +154,7 @@ public class ChatMessageService {
         }
     }
 
+    @Override
     public Map<String, WebSocketSession> getCurrentActiveSessions() {
         return messageHandler.getCurrentActiveSessions();
     }
