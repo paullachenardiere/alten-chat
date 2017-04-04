@@ -1,9 +1,5 @@
 package se.alten.sockets;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import se.alten.controller.ChatController;
-
-import se.alten.model.Message;
-import se.alten.model.MessagePost;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -32,8 +25,8 @@ public class MessageHandler extends TextWebSocketHandler {
     ChatController ChatController;
 
     private final static String SESSION_ID_PREFIX = "SESSION_ID=";
-    private final static String IS_WRITING_PREFIX = "IS_WRITING=";
-    private final static String HAS_STOPPED_WRITING_PREFIX = "HAS_STOPPED_WRITING=";
+//    private final static String IS_WRITING_PREFIX = "IS_WRITING=";
+//    private final static String HAS_STOPPED_WRITING_PREFIX = "HAS_STOPPED_WRITING=";
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -109,16 +102,11 @@ public class MessageHandler extends TextWebSocketHandler {
             session.close();
         } else {
             log.info("RAW textMessage in: " + messageIn.getPayload());
-
-//            String currentlyWriting = messageIn.getPayload().substring(IS_WRITING_PREFIX.length(), messageIn.getPayloadLength());
-
             for (WebSocketSession s : sessions.values()) {
                 if (s.isOpen() && !s.getId().equals(session.getId())) {
                     s.sendMessage(new TextMessage(messageIn.getPayload()));
                 }
             }
-
-
         }
     }
 

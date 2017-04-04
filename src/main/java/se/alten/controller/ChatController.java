@@ -15,7 +15,6 @@ import se.alten.service.ChatMessageService;
 
 import javax.persistence.NoResultException;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -100,19 +99,8 @@ public class ChatController extends WebMvcConfigurerAdapter {
         message = service.updateMessage(msg);
 
         try {
-//            service.getUser(msg.getUser().getUserId());
             //TODO Check if user exists before update.
-//            if (msg instanceof ReplyMessage) {
-//                type = "replyMessage";
-//                replyMessage = service.updateMessage((ReplyMessage) msg);
-//            }
-//            if (msg instanceof Message) {
-//                type = "message";
-//            }
             message = service.transformToPresentationMessage(message);
-
-//            log.info("Update " + type + " " + message.toString());
-
             responseEntity = new ResponseEntity<Message>(message, HttpStatus.CREATED);
 
         } catch (NoResultException | EmptyResultDataAccessException nre) {
